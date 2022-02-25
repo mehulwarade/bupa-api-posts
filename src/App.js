@@ -1,25 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import axios from 'axios';
+import { connect } from 'react-redux';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learns React
-        </a>
-      </header>
-    </div>
-  );
+/* CSS in JS Style */
+const timeline = {
+    liststyletype: "none",
+    position: "relative",
 }
 
-export default App;
+
+class App extends Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+      posts: []
+    }
+    this.add = this.add.bind(this);
+  }
+
+  async add(){
+    await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+    .then(res => {
+        console.log(res.data);
+        this.setState(() => ({
+          posts: res.data,
+        }));
+    })
+    .catch(err => {
+        console.log(err);
+    })
+  }
+
+  render(){
+  return (
+    <>
+      <button onClick={this.add}>Click here</button>
+      {this.state.posts.length > 0 &&
+        <div>
+          {this.state.posts.map((post, index) => {
+            console.log(post.body);
+            <div>{post.body}</div>
+            })
+          }
+        </div>
+      }
+    </>
+  )}
+}
+
+export default (App);
