@@ -47,6 +47,7 @@ class App extends Component {
 		this.all();
 		await axios.get(API_URL)
 			.then(res => {
+				// console.log(res.data);
 				this.setState(() => ({
 					posts: res.data,
 				}));
@@ -157,8 +158,11 @@ class App extends Component {
 						if (res.status) {
 							// console.log(`Get request succeeded. Moving on.`);
 							this.setState({
-								filteredposts: this.state.posts.filter(eachPost => eachPost.userId === this.InputUserID.current.value)
+								filteredposts: this.state.posts.filter(eachPost => {
+									return eachPost.userId == this.InputUserID.current.value
+								})
 							});
+							
 						}
 						else {
 							alert(`Something went wrong! Please debug.`);
@@ -199,6 +203,7 @@ class App extends Component {
 			}
 		}
 		this.clearallinput();
+		// console.log(this.state.posts);
 	}
 
 	// Showing all posts.
