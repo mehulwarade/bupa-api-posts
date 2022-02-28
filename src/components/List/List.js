@@ -1,12 +1,20 @@
 import styled from 'styled-components';
+import { store } from '../../redux/store'
+
 
 const Table = styled.table`
 	border: 1px solid black;
 	border-collapse: collapse;
 `;
 
-export const List = (props) => {
+const List = () => {
 
+	let allposts = store.getState().posts;
+	let filterposts = store.getState().filteredposts;
+
+	// console.log(allposts);
+	// console.log(filterposts);
+	
 	return (
 		<Table>
 			<tbody>
@@ -16,8 +24,8 @@ export const List = (props) => {
 					<th>Title</th>
 					<th>Body</th>
 				</tr>
-				{props.filterposts.length === 0 && props.allposts.length > 0 && 
-					props.allposts.map((eachPost, index) => (
+				{filterposts.length === 0 && allposts.length > 0 &&
+					allposts.map((eachPost, index) => (
 						<tr key={`${eachPost.id}-${index}`}>
 							<td>{eachPost.id}</td>
 							<td>{eachPost.userId}</td>
@@ -26,8 +34,8 @@ export const List = (props) => {
 						</tr>
 					))
 				}
-				{props.filterposts.length > 0 &&
-					props.filterposts.map((eachPost, index) => (
+				{filterposts.length > 0 &&
+					filterposts.map((eachPost, index) => (
 						<tr key={`${eachPost.id}-${index}`}>
 							<td>{eachPost.id}</td>
 							<td>{eachPost.userId}</td>
@@ -41,3 +49,6 @@ export const List = (props) => {
 		</Table>
 	);
 };
+
+
+export default (List);

@@ -6,7 +6,11 @@ import styled from 'styled-components';
 // Importing all the components
 import { Header } from './components/Header/Header'
 import { Button } from './components/Button/Button'
-import { List } from './components/List/List'
+import List  from './components/List/List'
+
+// Redux
+import { store } from './redux/store';
+
 
 const CommandStrip = styled.section`
   background: #f1f1f2;
@@ -23,12 +27,16 @@ const API_URL = `https://jsonplaceholder.typicode.com/posts`;
 
 class App extends Component {
 
+	allposts = store.getState().posts;
+	filterposts = store.getState().filteredposts;
+
+
 	constructor(props) {
 		super(props);
-		this.state = {
-			posts: [],
-			filteredposts: []
-		}
+		// this.state = {
+		// 	posts: [],
+		// 	filteredposts: []
+		// }
 
 		this.InputUserID = React.createRef();
 		this.InputID = React.createRef();
@@ -47,10 +55,15 @@ class App extends Component {
 		this.all();
 		await axios.get(API_URL)
 			.then(res => {
-				this.setState(() => ({
-					posts: res.data,
-				}));
+				store.dispatch({
+					type: 'get_all_posts',
+					payload: res.data
+				});
 			})
+		
+		
+
+		console.log(this.state.posts);
 	}
 
 	addupdate = async () => {
@@ -203,6 +216,7 @@ class App extends Component {
 
 	// Showing all posts.
 	all = () => {
+
 		this.setState({
 			filteredposts: []
 		});
@@ -245,7 +259,7 @@ class App extends Component {
 					<Button onClick={this.delete} text='Delete' backgroundColor='#cb0000' testTag='DeleteBtn' />
 				</CommandStrip>
 
-				<List allposts={this.state.posts} filterposts={this.state.filteredposts} />
+				<List />
 
 			</>
 		)

@@ -1,0 +1,15 @@
+Create the store -> store.js (Needs reducer and an initial state)
+Wrap the react app so any component can access the store -> index.js (wrap the App with Provider and pass the store variable to it).
+Configure the dev tools -> store composeWithDevTools so that it shows up on the chrome extension. Check the state in there.
+Shift the reducer to a seperate file
+	->make empty/temp state
+	-> get types and payloads for each function. *
+
+
+read data from redux store into components -> Start with List.js
+	-> Lists.js gets the state from App.js
+	-> Dispatch the action from App.js
+	# https://stackoverflow.com/a/38678454
+	-> Use connect to allow the re-render of components on store data change.
+
+Connect the component from redux store.
