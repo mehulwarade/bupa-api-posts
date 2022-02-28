@@ -1,5 +1,5 @@
 {
-  "name": "api",
+  "name": "bupa-api-posts",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

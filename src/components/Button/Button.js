@@ -12,15 +12,11 @@ const Btn = styled.button`
 	width: 10%;
 	height: 2em;
 	font-family: Courier;
+	width: fit-content;
 
 &:hover {
     background-color: #bbb;
 }
-`;
-
-const Addbtn = styled(Btn)`
-  color: tomato;
-  border-color: tomato;
 `;
 
 export const Button = (props) => {

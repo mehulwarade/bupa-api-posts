@@ -5,6 +5,6 @@ import {shallow , mount} from 'enzyme';
 it('should load the original webpage', () => {
   let wrapper = mount(<App />);
   //console.log(wrapper.debug());
-  let findp = wrapper.find('p').length;
+  let findp = wrapper.find('h1').length;
   expect(findp).toBe(1); 
 })
