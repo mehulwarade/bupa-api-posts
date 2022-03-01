@@ -199,10 +199,6 @@ class App extends Component {
 								id: IdToDelete
 							}
 						});
-
-						// this.setState({
-						// 	posts: this.state.posts.filter(eachPost => eachPost.id !== IdToDelete)
-						// });
 					}
 					else {
 						alert(`Something went wrong! Please debug.`);
@@ -269,6 +265,8 @@ Your component is only going to re-render if its state or props are changed. You
 
 The connect function generates a wrapper component that subscribes to the store. When an action is dispatched, the wrapper component's callback is notified and hence rerenders.
 */
+
+// We can also use subscribe to checkout the change in store. But we are using connect so no need.
 const mapStateToProps = state => {
 	return {
 		posts: state.posts,
@@ -277,32 +275,3 @@ const mapStateToProps = state => {
 }
 
 export default connect(mapStateToProps)(App);
-
-
-
-// Example:
-// store.dispatch({
-// 	type: 'GET_POSTS',
-// 	payload: {
-// 		allposts:[
-// 			{
-// 				userId: 1,
-// 				id: 1,
-// 				title: 'a',
-// 				body: 'body'
-// 			},
-// 			{
-// 				userId: 2,
-// 				id: 2,
-// 				title: 'b',
-// 				body: 'c'
-// 			},
-// 			{
-// 				userId: 1,
-// 				id: 3,
-// 				title: 'd',
-// 				body: 'e'
-// 			}
-// 		]
-// 	}
-// });

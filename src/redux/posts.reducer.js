@@ -2,6 +2,8 @@ import * as actions from './action.types'
 
 // job of reducer is to perform 'action' on the 'currentState' and return the newState
 // Reducer is pure function. This code should never change. Make all the API calls and everything outside and only pass the data here.
+
+// We are mutating the currentState everywhere. Need to create new state everytime by using library like immutability.js
 const initialState = {
 	posts: [],
 	filteredposts: []
