@@ -1,6 +1,10 @@
 import { createStore } from 'redux';
 import {composeWithDevTools} from 'redux-devtools-extension'
-import posts_reducer from './reducers/posts.reducer'
 
+// Basically Reducer has all the data, hence the reducer is very important for store.
+import postReducer from './posts.reducer'
 
-export const store = createStore(posts_reducer, composeWithDevTools());
+// createStore is higher order function as it takes a function as parameter.
+const store = createStore(postReducer, composeWithDevTools());
+
+export default store;

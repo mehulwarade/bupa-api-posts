@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-// import { connect } from 'react-redux';
+
 import styled from 'styled-components';
 
 // Importing all the components
 import { Header } from './components/Header/Header'
 import { Button } from './components/Button/Button'
-import List  from './components/List/List'
+import List from './components/List/List'
 
 // Redux
-import { store } from './redux/store';
-
+import store from './redux/store';
+import * as actions from './redux/action.types';
+import { connect } from 'react-redux';
 
 const CommandStrip = styled.section`
   background: #f1f1f2;
@@ -26,17 +27,8 @@ const Input = styled.input`
 const API_URL = `https://jsonplaceholder.typicode.com/posts`;
 
 class App extends Component {
-
-	allposts = store.getState().posts;
-	filterposts = store.getState().filteredposts;
-
-
 	constructor(props) {
 		super(props);
-		// this.state = {
-		// 	posts: [],
-		// 	filteredposts: []
-		// }
 
 		this.InputUserID = React.createRef();
 		this.InputID = React.createRef();
@@ -46,24 +38,24 @@ class App extends Component {
 		this.addupdate = this.addupdate.bind(this);
 		this.filter = this.filter.bind(this);
 		this.delete = this.delete.bind(this);
-		this.all = this.all.bind(this);
+		this.allPosts = this.allPosts.bind(this);
 		this.clearallinput = this.clearallinput.bind(this);
 	}
 
 	componentDidMount = async () => {
 		// Initial load of all data from the server
-		this.all();
 		await axios.get(API_URL)
 			.then(res => {
 				store.dispatch({
-					type: 'get_all_posts',
-					payload: res.data
+					type: actions.GET_POSTS,
+					payload: {
+						allposts: res.data
+					}
 				});
 			})
-		
-		
 
-		console.log(this.state.posts);
+		// Clear all the input that might be there.
+		this.clearallinput();
 	}
 
 	addupdate = async () => {
@@ -74,7 +66,7 @@ class App extends Component {
 		*/
 
 		let id = this.InputID.current.value;
-		let userid = this.InputUserID.current.value;
+		let userId = this.InputUserID.current.value;
 		let title = this.InputTitle.current.value;
 		let body = this.InputBody.current.value;
 
@@ -88,7 +80,7 @@ class App extends Component {
 						id: id,
 						title: title,
 						body: body,
-						userId: userid,
+						userId: userId,
 					}),
 					headers: {
 						'Content-type': 'application/json; charset=UTF-8',
@@ -96,18 +88,14 @@ class App extends Component {
 				}).then(response => {
 					if (response.status) {
 						// console.log(`Put request succeeded. Moving on.`);
-						this.setState({
-							posts: this.state.posts.map((eachPost) => {
-								if (eachPost.id === id) {
-									return {
-										userId: userid,
-										id: id,
-										title: title,
-										body: body
-									}
-								}
-								return eachPost;
-							})
+						store.dispatch({
+							type: actions.UPDATE_POST,
+							payload: {
+								userId: userId,
+								id: id,
+								title: title,
+								body: body
+							}
 						});
 					}
 					else {
@@ -118,7 +106,7 @@ class App extends Component {
 				alert(`Update Error ${err.response.status}`);
 			}
 		}
-		else if (userid.length !== 0 && title.length !== 0 && body.length !== 0) {
+		else if (userId.length !== 0 && title.length !== 0 && body.length !== 0) {
 			// console.log('UserID present. Adding:');
 			try {
 
@@ -127,7 +115,7 @@ class App extends Component {
 					body: JSON.stringify({
 						title: title,
 						body: body,
-						userId: userid,
+						userId: userId,
 					}),
 					headers: {
 						'Content-type': 'application/json; charset=UTF-8',
@@ -136,9 +124,13 @@ class App extends Component {
 					if (response.status) {
 						// console.log(`Post request succeeded. Moving on.`);
 
-						const previousState = [...this.state.posts];
-						this.setState({
-							posts: [...previousState, { userId: userid, id: this.state.posts.length + 1, title: title, body: body }]
+						store.dispatch({
+							type: actions.ADD_POST,
+							payload: {
+								userId: userId,
+								title: title,
+								body: body
+							}
 						});
 					}
 					else {
@@ -165,12 +157,14 @@ class App extends Component {
 				await axios.get(`${API_URL}?userId=${this.InputUserID.current.value}`)
 					.then(res => {
 						console.log(`Filtering all posts from the userID: ${this.InputUserID.current.value}`);
-
 						// Checking server response.
 						if (res.status) {
 							// console.log(`Get request succeeded. Moving on.`);
-							this.setState({
-								filteredposts: this.state.posts.filter(eachPost => eachPost.userId === this.InputUserID.current.value)
+							store.dispatch({
+								type: actions.FILTER_POSTS,
+								payload: {
+									userId: this.InputUserID.current.value
+								}
 							});
 						}
 						else {
@@ -178,7 +172,7 @@ class App extends Component {
 						}
 					})
 			} catch (err) {
-				alert(`Filter Error ${err.response.status}`);
+				alert(`Filter Error ${err.response}`);
 			}
 
 		}
@@ -199,9 +193,16 @@ class App extends Component {
 					// Checking server response.
 					if (res.status) {
 						// console.log(`Get request succeeded. Moving on.`);
-						this.setState({
-							posts: this.state.posts.filter(eachPost => eachPost.id !== IdToDelete)
+						store.dispatch({
+							type: actions.DELETE_POST,
+							payload: {
+								id: IdToDelete
+							}
 						});
+
+						// this.setState({
+						// 	posts: this.state.posts.filter(eachPost => eachPost.id !== IdToDelete)
+						// });
 					}
 					else {
 						alert(`Something went wrong! Please debug.`);
@@ -214,13 +215,10 @@ class App extends Component {
 		this.clearallinput();
 	}
 
-	// Showing all posts.
-	all = () => {
-
-		this.setState({
-			filteredposts: []
+	allPosts = () => {
+		store.dispatch({
+			type: actions.GET_ALL_POSTS,
 		});
-		this.clearallinput();
 	}
 
 	clearallinput = () => {
@@ -243,7 +241,7 @@ class App extends Component {
 				</CommandStrip>
 
 				<CommandStrip>
-					<Button onClick={this.all} text='All posts' backgroundColor='yellow' testTag='AllBtn' />
+					<Button onClick={this.allPosts} text='All posts' backgroundColor='yellow' testTag='AllBtn' />
 
 					{/* AddUpdate: 
 						if ID present -> Update. 
@@ -260,10 +258,51 @@ class App extends Component {
 				</CommandStrip>
 
 				<List />
-
 			</>
 		)
 	}
 }
 
-export default (App);
+// https://stackoverflow.com/a/38678454
+/*
+Your component is only going to re-render if its state or props are changed. You are not relying on this.state or this.props, but rather fetching the state of the store directly within your render function.
+
+The connect function generates a wrapper component that subscribes to the store. When an action is dispatched, the wrapper component's callback is notified and hence rerenders.
+*/
+const mapStateToProps = state => {
+	return {
+		posts: state.posts,
+		filterposts: state.filteredposts
+	}
+}
+
+export default connect(mapStateToProps)(App);
+
+
+
+// Example:
+// store.dispatch({
+// 	type: 'GET_POSTS',
+// 	payload: {
+// 		allposts:[
+// 			{
+// 				userId: 1,
+// 				id: 1,
+// 				title: 'a',
+// 				body: 'body'
+// 			},
+// 			{
+// 				userId: 2,
+// 				id: 2,
+// 				title: 'b',
+// 				body: 'c'
+// 			},
+// 			{
+// 				userId: 1,
+// 				id: 3,
+// 				title: 'd',
+// 				body: 'e'
+// 			}
+// 		]
+// 	}
+// });
