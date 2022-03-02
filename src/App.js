@@ -26,6 +26,7 @@ const Input = styled.input`
 
 const API_URL = `https://jsonplaceholder.typicode.com/posts`;
 
+// use functional components. UseEffect instead of constructor and componentDidMount
 class App extends Component {
 	constructor(props) {
 		super(props);

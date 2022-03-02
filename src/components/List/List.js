@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import store from '../../redux/store'
-
+// use hooks for importing. use connect.
 
 const Table = styled.table`
 	border: 1px solid black;
