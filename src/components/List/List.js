@@ -1,17 +1,14 @@
 import styled from 'styled-components';
-import store from '../../redux/store'
+
 // use hooks for importing. use connect.
+import { connect } from 'react-redux';
 
 const Table = styled.table`
 	border: 1px solid black;
 	border-collapse: collapse;
 `;
 
-const List = () => {
-
-	let allposts = store.getState().posts;
-	let filterposts = store.getState().filteredposts;
-
+const List = ({allposts, filterposts}) => {
 	return (
 		<Table>
 			<tbody>
@@ -47,5 +44,14 @@ const List = () => {
 	);
 };
 
+// Used Hooks to get store data.
+// https://stackoverflow.com/a/38205160
+// https://github.com/reduxjs/react-redux/blob/master/docs/api/connect.md
+const mapStateToProps = state => {
+	return {
+		allposts: state.posts,
+		filterposts: state.filteredposts
+	}
+}
 
-export default (List);
+export default connect(mapStateToProps)(List);

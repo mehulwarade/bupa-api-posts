@@ -24,12 +24,12 @@ const postReducer = (currentState = initialState, action) => {
 		case actions.FILTER_POSTS:
 			return {
 				posts: [...currentState.posts],
-				filteredposts: currentState.posts.filter(eachPost => eachPost.userId == payload.userId)
+				filteredposts: currentState.posts.filter(eachPost => eachPost.userId === payload.userId)
 			}
 		case actions.UPDATE_POST:
 			return {
 				posts: currentState.posts.map((eachPost) => {
-					if (eachPost.id == payload.id) {
+					if (eachPost.id === payload.id) {
 						return {
 							userId: payload.userId,
 							id: payload.id,

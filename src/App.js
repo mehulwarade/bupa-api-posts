@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 
 import styled from 'styled-components';
@@ -27,49 +27,42 @@ const Input = styled.input`
 const API_URL = `https://jsonplaceholder.typicode.com/posts`;
 
 // use functional components. UseEffect instead of constructor and componentDidMount
-class App extends Component {
-	constructor(props) {
-		super(props);
+const App = () => {
+	const InputUserID = React.createRef();
+	const InputID = React.createRef() || 5;
+	const InputTitle = React.createRef();
+	const InputBody = React.createRef();
 
-		this.InputUserID = React.createRef();
-		this.InputID = React.createRef();
-		this.InputTitle = React.createRef();
-		this.InputBody = React.createRef();
 
-		this.addupdate = this.addupdate.bind(this);
-		this.filter = this.filter.bind(this);
-		this.delete = this.delete.bind(this);
-		this.allPosts = this.allPosts.bind(this);
-		this.clearallinput = this.clearallinput.bind(this);
-	}
+	useEffect(() => {
 
-	componentDidMount = async () => {
-		// Initial load of all data from the server
-		await axios.get(API_URL)
-			.then(res => {
-				store.dispatch({
-					type: actions.GET_POSTS,
-					payload: {
-						allposts: res.data
-					}
-				});
-			})
+		async function fetchData() {
+			await axios.get(API_URL)
+				.then(res => {
+					store.dispatch({
+						type: actions.GET_POSTS,
+						payload: {
+							allposts: res.data
+						}
+					});
+				})
+		}
+		fetchData();
+	}, []);
 
-		// Clear all the input that might be there.
-		this.clearallinput();
-	}
-
-	addupdate = async () => {
+	const addupdate = async () => {
 		/* AddUpdate: 
 			if ID present -> Update. 
 			If not, then UserID required -> Add. 
 			Title & Body -> required 
 		*/
 
-		let id = this.InputID.current.value;
-		let userId = this.InputUserID.current.value;
-		let title = this.InputTitle.current.value;
-		let body = this.InputBody.current.value;
+		let id = parseInt(InputID.current.value);
+		let userId = parseInt(InputUserID.current.value);
+		let title = InputTitle.current.value;
+		let body = InputBody.current.value;
+
+		clearallinput();
 
 		if (id.length !== 0 && title.length !== 0 && body.length !== 0) {
 			// console.log('ID present. Updating:');
@@ -110,7 +103,6 @@ class App extends Component {
 		else if (userId.length !== 0 && title.length !== 0 && body.length !== 0) {
 			// console.log('UserID present. Adding:');
 			try {
-
 				await axios.get(API_URL, {
 					method: 'POST',
 					body: JSON.stringify({
@@ -145,26 +137,27 @@ class App extends Component {
 		else {
 			alert("Data not present. Please specify Title, Body and ID or userID.");
 		}
-		this.clearallinput();
 	}
 
 	// DONE
-	filter = async () => {
+	const filter = async () => {
+		let UserIdToFilter = parseInt(InputUserID.current.value);
+		clearallinput();
 		// Implemented filter by just userID. Filtering by ID or both should be easy with few if statements.
-		if (this.InputUserID.current.value.length === 0) {
+		if (UserIdToFilter === 0) {
 			alert("UserID required");
 		} else {
 			try {
-				await axios.get(`${API_URL}?userId=${this.InputUserID.current.value}`)
+				await axios.get(`${API_URL}?userId=${UserIdToFilter}`)
 					.then(res => {
-						console.log(`Filtering all posts from the userID: ${this.InputUserID.current.value}`);
+						console.log(`Filtering all posts from the userID: ${UserIdToFilter}`);
 						// Checking server response.
 						if (res.status) {
 							// console.log(`Get request succeeded. Moving on.`);
 							store.dispatch({
 								type: actions.FILTER_POSTS,
 								payload: {
-									userId: this.InputUserID.current.value
+									userId: UserIdToFilter
 								}
 							});
 						}
@@ -177,18 +170,18 @@ class App extends Component {
 			}
 
 		}
-		this.clearallinput();
 	}
 
 	// DONE
-	delete = async () => {
+	const deletePost = async () => {
 		// Error when you add (it adds locally id = 101) and then delete, the API call throws an error as the server does not have id=101;
-		if (this.InputID.current.value.length === 0) {
+		if (InputID.current.value.length === 0) {
 			alert('ID required');
 		} else {
-			let IdToDelete = parseInt(this.InputID.current.value);
+			let IdToDelete = parseInt(InputID.current.value);
+			clearallinput();
 			try {
-				await axios.get(`${API_URL}/${this.InputID.current.value}`, {
+				await axios.get(`${API_URL}/${IdToDelete}`, {
 					method: 'DELETE'
 				}).then((res) => {
 					// Checking server response.
@@ -209,58 +202,66 @@ class App extends Component {
 				alert(`Delete Error ${err.response.status}: ID not found`);
 			}
 		}
-		this.clearallinput();
 	}
 
-	allPosts = () => {
+	const allPosts = () => {
 		store.dispatch({
 			type: actions.GET_ALL_POSTS,
 		});
 	}
 
-	clearallinput = () => {
-		this.InputID.current.value = '';
-		this.InputUserID.current.value = '';
-		this.InputTitle.current.value = '';
-		this.InputBody.current.value = '';
+	const clearallinput = () => {
+
+		if (InputID.current != null) {
+			InputID.current.value = null;
+		}
+		if (InputUserID.current != null) {
+			InputUserID.current.value = null;
+		}
+		if (InputTitle.current != null) {
+			InputTitle.current.value = '';
+		}
+		if (InputBody.current != null) {
+			InputBody.current.value = '';
+		}
 	}
 
-	render() {
-		return (
-			<>
-				<Header text='Post Manager!' testTag='header' />
+	return (
+		<>
+			<Header text='Post Manager!' testTag='header' />
 
-				<CommandStrip>
-					<Input type="number" ref={this.InputID} testTag='InputID' placeholder="ID" />
-					<Input type="number" ref={this.InputUserID} testTag='InputUserID' placeholder="userID" />
-					<Input type="text" ref={this.InputTitle} testTag='InputTitle' placeholder="Title" />
-					<Input type="text" ref={this.InputBody} testTag='InputBody' placeholder="Body" />
-				</CommandStrip>
+			<CommandStrip>
+				<Input type="number" ref={InputID} testTag='InputID' placeholder="ID" />
+				<Input type="number" ref={InputUserID} testTag='InputUserID' placeholder="userID" />
+				<Input type="text" ref={InputTitle} testTag='InputTitle' placeholder="Title" />
+				<Input type="text" ref={InputBody} testTag='InputBody' placeholder="Body" />
+			</CommandStrip>
 
-				<CommandStrip>
-					<Button onClick={this.allPosts} text='All posts' backgroundColor='yellow' testTag='AllBtn' />
+			<CommandStrip>
+				<Button onClick={allPosts} text='All posts' backgroundColor='yellow' testTag='AllBtn' />
 
-					{/* AddUpdate: 
-						if ID present -> Update. 
-						If not, then UserID required -> Add. 
-						Title & Body -> required 
-					*/}
-					<Button onClick={this.addupdate} text='Add/Update' backgroundColor='#8eba43' testTag='AddUpdateBtn' />
+				{/* AddUpdate: 
+					if ID present -> Update. 
+					If not, then UserID required -> Add. 
+					Title & Body -> required 
+				*/}
+				<Button onClick={addupdate} text='Add/Update' backgroundColor='#8eba43' testTag='AddUpdateBtn' />
 
-					{/* Filter: Required: userID */}
-					<Button onClick={this.filter} text='Filter' backgroundColor='#7d4427' testTag='FilterBtn' />
+				{/* Filter: Required: userID */}
+				<Button onClick={filter} text='Filter' backgroundColor='#7d4427' testTag='FilterBtn' />
 
-					{/* Delete: Required: ID */}
-					<Button onClick={this.delete} text='Delete' backgroundColor='#cb0000' testTag='DeleteBtn' />
-				</CommandStrip>
+				{/* Delete: Required: ID */}
+				<Button onClick={deletePost} text='Delete' backgroundColor='#cb0000' testTag='DeleteBtn' />
+			</CommandStrip>
 
-				<List />
-			</>
-		)
-	}
+			<List />
+		</>
+	)
+
 }
 
 // https://stackoverflow.com/a/38678454
+// https://stackoverflow.com/a/38205160
 /*
 Your component is only going to re-render if its state or props are changed. You are not relying on this.state or this.props, but rather fetching the state of the store directly within your render function.
 
@@ -268,11 +269,5 @@ The connect function generates a wrapper component that subscribes to the store.
 */
 
 // We can also use subscribe to checkout the change in store. But we are using connect so no need.
-const mapStateToProps = state => {
-	return {
-		posts: state.posts,
-		filterposts: state.filteredposts
-	}
-}
 
-export default connect(mapStateToProps)(App);
+export default connect()(App);
