@@ -1,16 +1,14 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
 
 import styled from 'styled-components';
 
 // Importing all the components
-import { Header } from './components/Header/Header'
-import { Button } from './components/Button/Button'
-import List from './components/List/List'
+import { Header } from './components/Header/Header';
+import { Button } from './components/Button/Button';
+import List from './components/List/List';
+import * as API from './Api_Call';
 
 // Redux
-import store from './redux/store';
-import * as actions from './redux/action.types';
 import { connect } from 'react-redux';
 
 const CommandStrip = styled.section`
@@ -27,25 +25,19 @@ const Input = styled.input`
 const API_URL = `https://jsonplaceholder.typicode.com/posts`;
 
 // use functional components. UseEffect instead of constructor and componentDidMount
-const App = () => {
+const App = (testprops) => {
+
+	// console.log(a);
+
 	const InputUserID = React.createRef();
-	const InputID = React.createRef() || 5;
+	const InputID = React.createRef();
 	const InputTitle = React.createRef();
 	const InputBody = React.createRef();
 
 
 	useEffect(() => {
-
 		async function fetchData() {
-			await axios.get(API_URL)
-				.then(res => {
-					store.dispatch({
-						type: actions.GET_POSTS,
-						payload: {
-							allposts: res.data
-						}
-					});
-				})
+			await API.API_GET_DEFAULT_LIST({API_URL});
 		}
 		fetchData();
 	}, []);
@@ -57,157 +49,44 @@ const App = () => {
 			Title & Body -> required 
 		*/
 
-		let id = parseInt(InputID.current.value);
-		let userId = parseInt(InputUserID.current.value);
-		let title = InputTitle.current.value;
-		let body = InputBody.current.value;
+		let props = {
+			API_URL,
+			id: parseInt(InputID.current.value) || testprops.testId || 0,
+			userId: parseInt(InputUserID.current.value) || testprops.testuserId || 0,
+			title: InputTitle.current.value || testprops.testTitle || '',
+			body: InputBody.current.value || testprops.testBody || ''
+		}
 
 		clearallinput();
 
-		if (id.length !== 0 && title.length !== 0 && body.length !== 0) {
-			// console.log('ID present. Updating:');
-			// Error when you add (it adds locally id = 101) and then update, the API call throws an error as the server does not have id=101;
-			try {
-				await axios.get(`${API_URL}/${id}`, {
-					method: 'PUT',
-					body: JSON.stringify({
-						id: id,
-						title: title,
-						body: body,
-						userId: userId,
-					}),
-					headers: {
-						'Content-type': 'application/json; charset=UTF-8',
-					},
-				}).then(response => {
-					if (response.status) {
-						// console.log(`Put request succeeded. Moving on.`);
-						store.dispatch({
-							type: actions.UPDATE_POST,
-							payload: {
-								userId: userId,
-								id: id,
-								title: title,
-								body: body
-							}
-						});
-					}
-					else {
-						alert(`Something went wrong! Please debug.`);
-					}
-				})
-			} catch (err) {
-				alert(`Update Error ${err.response.status}`);
-			}
-		}
-		else if (userId.length !== 0 && title.length !== 0 && body.length !== 0) {
-			// console.log('UserID present. Adding:');
-			try {
-				await axios.get(API_URL, {
-					method: 'POST',
-					body: JSON.stringify({
-						title: title,
-						body: body,
-						userId: userId,
-					}),
-					headers: {
-						'Content-type': 'application/json; charset=UTF-8',
-					},
-				}).then((response) => {
-					if (response.status) {
-						// console.log(`Post request succeeded. Moving on.`);
+		let api_response = await API.API_ADD_UPDATE_LIST(props);
 
-						store.dispatch({
-							type: actions.ADD_POST,
-							payload: {
-								userId: userId,
-								title: title,
-								body: body
-							}
-						});
-					}
-					else {
-						alert(`Something went wrong! Please debug.`);
-					}
-				});
-			} catch (err) {
-				alert(`Add Error ${err.response.status}`);
-			}
-		}
-		else {
-			alert("Data not present. Please specify Title, Body and ID or userID.");
+		if(!api_response){
+			alert('Data not present. All info is needed.');
 		}
 	}
 
-	// DONE
 	const filter = async () => {
-		let UserIdToFilter = parseInt(InputUserID.current.value);
+		let userId = parseInt(InputUserID.current.value) || testprops.testuserId || 0;
 		clearallinput();
-		// Implemented filter by just userID. Filtering by ID or both should be easy with few if statements.
-		if (UserIdToFilter === 0) {
+
+		if (userId === 0) {
 			alert("UserID required");
 		} else {
-			try {
-				await axios.get(`${API_URL}?userId=${UserIdToFilter}`)
-					.then(res => {
-						console.log(`Filtering all posts from the userID: ${UserIdToFilter}`);
-						// Checking server response.
-						if (res.status) {
-							// console.log(`Get request succeeded. Moving on.`);
-							store.dispatch({
-								type: actions.FILTER_POSTS,
-								payload: {
-									userId: UserIdToFilter
-								}
-							});
-						}
-						else {
-							alert(`Something went wrong! Please debug.`);
-						}
-					})
-			} catch (err) {
-				alert(`Filter Error ${err.response}`);
-			}
-
+			await API.API_FILTER_LIST({API_URL, userId});
 		}
 	}
 
-	// DONE
 	const deletePost = async () => {
+		let id = parseInt(InputID.current.value) || testprops.testId || 0;
+		clearallinput();
 		// Error when you add (it adds locally id = 101) and then delete, the API call throws an error as the server does not have id=101;
-		if (InputID.current.value.length === 0) {
+
+		if (id === 0) {
 			alert('ID required');
 		} else {
-			let IdToDelete = parseInt(InputID.current.value);
-			clearallinput();
-			try {
-				await axios.get(`${API_URL}/${IdToDelete}`, {
-					method: 'DELETE'
-				}).then((res) => {
-					// Checking server response.
-					if (res.status) {
-						// console.log(`Get request succeeded. Moving on.`);
-						store.dispatch({
-							type: actions.DELETE_POST,
-							payload: {
-								id: IdToDelete
-							}
-						});
-					}
-					else {
-						alert(`Something went wrong! Please debug.`);
-					}
-				})
-			} catch (err) {
-				alert(`Delete Error ${err.response.status}: ID not found`);
-			}
+			await API.API_DELETE_LIST({API_URL, id});
 		}
-	}
-
-	const allPosts = () => {
-		store.dispatch({
-			type: actions.GET_ALL_POSTS,
-		});
 	}
 
 	const clearallinput = () => {
@@ -238,7 +117,7 @@ const App = () => {
 			</CommandStrip>
 
 			<CommandStrip>
-				<Button onClick={allPosts} text='All posts' backgroundColor='yellow' testTag='AllBtn' />
+				<Button onClick={() => API.API_GET_CURRENT_LIST()} text='All posts' backgroundColor='yellow' testTag='AllBtn' />
 
 				{/* AddUpdate: 
 					if ID present -> Update. 
