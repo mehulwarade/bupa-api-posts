@@ -58,8 +58,8 @@ const App = (testprops) => {
 		}
 
 		clearallinput();
-
-		let api_response = await API.API_ADD_UPDATE_LIST(props);
+		
+		const api_response = await API.API_ADD_UPDATE_LIST(props);
 
 		if(!api_response){
 			alert('Data not present. All info is needed.');

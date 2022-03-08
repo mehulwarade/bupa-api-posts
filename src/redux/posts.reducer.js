@@ -4,6 +4,7 @@ import * as actions from './action.types'
 // Reducer is pure function. This code should never change. Make all the API calls and everything outside and only pass the data here.
 
 // We are mutating the currentState everywhere. Need to create new state everytime by using library like immutability.js
+// for array use concat / push/ pop
 const initialState = {
 	posts: [],
 	filteredposts: []
